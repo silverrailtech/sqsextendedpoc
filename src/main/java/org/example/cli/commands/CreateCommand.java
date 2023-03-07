@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.sqs.model.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Command(name = "create", description = "Creates named value with given id and value")
 public class CreateCommand implements Runnable {
@@ -58,6 +59,7 @@ public class CreateCommand implements Runnable {
                 SendMessageRequest.builder().queueUrl(url.queueUrl())
                         .messageBody(myLongString)
                         .messageGroupId("1")
+                        .messageDeduplicationId(UUID.randomUUID().toString())
                         .build();
         sqsExtended.sendMessage(myMessageRequest);
         System.out.println("Sent the message.");
