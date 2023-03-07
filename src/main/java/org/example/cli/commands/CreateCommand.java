@@ -40,7 +40,7 @@ public class CreateCommand implements Runnable {
 
         final ExtendedClientConfiguration extendedClientConfig =
                 new ExtendedClientConfiguration()
-                        .withLargePayloadSupportEnabled(s3, "");
+                        .withLargePayloadSupportEnabled(s3, "testkrakenbucket");
 
         SqsClient sqsClient = SqsClient.builder().region(Region.EU_WEST_1).build();
         final AmazonSQSExtendedClient sqsExtended =
