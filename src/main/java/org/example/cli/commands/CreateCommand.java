@@ -55,7 +55,10 @@ public class CreateCommand implements Runnable {
         final String myLongString = new String(chars);
 
         final SendMessageRequest myMessageRequest =
-                SendMessageRequest.builder().queueUrl(url.queueUrl()).messageBody(myLongString).build();
+                SendMessageRequest.builder().queueUrl(url.queueUrl())
+                        .messageBody(myLongString)
+                        .messageGroupId("1")
+                        .build();
         sqsExtended.sendMessage(myMessageRequest);
         System.out.println("Sent the message.");
 
