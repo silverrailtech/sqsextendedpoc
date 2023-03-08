@@ -13,56 +13,38 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
-@Command(name = "create", description = "Creates named value with given id and value")
-public class CreateCommand implements Runnable {
+@Command(name = "receive", description = "Receive a large payload to SQS")
+public class ReceiveCommand implements Runnable {
 
-    private Logger logger = LoggerFactory.getLogger(CreateCommand.class);
+    private Logger logger = LoggerFactory.getLogger(ReceiveCommand.class);
 
     @Mixin
     private HelpOption helpOption;
 
-    @Option(names = "-id", description = "value id", required = true)
-    private String id;
-    @Option(names = "-name", description = "value name")
-    private String name;
-    @Option(names = "-value", description = "value content", required = true)
-    private String value;
+    @Option(names = "-bucketName", description = "The s3 bucket used for message", required = true)
+    private String bucketName;
+    @Option(names = "-queueName", description = "The name of the SQS queue")
+    private String queueName;
 
     @Override
     public void run() {
-        logger.info("Executing create command with id = " + id + ", name = " + name + ", value = " + value);
+        logger.info("Executing send command with bucketName = " + bucketName + ", queueName = " + queueName );
 
         final S3Client s3 = S3Client.builder().region(Region.EU_WEST_1).build();
 
 
         final ExtendedClientConfiguration extendedClientConfig =
                 new ExtendedClientConfiguration()
-                        .withLargePayloadSupportEnabled(s3, "testkrakenbucket");
+                        .withLargePayloadSupportEnabled(s3, bucketName);
 
         SqsClient sqsClient = SqsClient.builder().region(Region.EU_WEST_1).build();
         final AmazonSQSExtendedClient sqsExtended =
                 new AmazonSQSExtendedClient(sqsClient, extendedClientConfig);
 
 
-        var url = sqsExtended.getQueueUrl(GetQueueUrlRequest.builder().queueName("testkraken.fifo").queueOwnerAWSAccountId("334423569906").build());
-
-        int stringLength = 300000;
-        char[] chars = new char[stringLength];
-        Arrays.fill(chars, 'x');
-        final String myLongString = new String(chars);
-
-        final SendMessageRequest myMessageRequest =
-                SendMessageRequest.builder().queueUrl(url.queueUrl())
-                        .messageBody(myLongString)
-                        .messageGroupId("1")
-                        .messageDeduplicationId(UUID.randomUUID().toString())
-                        .build();
-        sqsExtended.sendMessage(myMessageRequest);
-        System.out.println("Sent the message.");
+        var url = sqsExtended.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).queueOwnerAWSAccountId("334423569906").build());
 
         // Receive the message.
         final ReceiveMessageRequest receiveMessageRequest =
@@ -81,7 +63,8 @@ public class CreateCommand implements Runnable {
 
         // Delete the message, the queue, and the bucket.
         final String messageReceiptHandle = messages.get(0).receiptHandle();
-        sqsExtended.deleteMessage(DeleteMessageRequest.builder().queueUrl(url.queueUrl()).queueUrl(messageReceiptHandle).build());
-        System.out.println("Deleted the message.");
+        sqsExtended.deleteMessage( DeleteMessageRequest.builder().queueUrl(url.queueUrl())
+                .receiptHandle(messageReceiptHandle).build());
+
     }
 }

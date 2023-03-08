@@ -1,9 +1,7 @@
 package org.example.cli.parser;
 
-import org.example.cli.commands.CreateCommand;
-import org.example.cli.commands.DeleteCommand;
-import org.example.cli.commands.ListCommand;
-import org.example.cli.commands.UpdateCommand;
+import org.example.cli.commands.ReceiveCommand;
+import org.example.cli.commands.SendCommand;
 import org.example.cli.common.HelpOption;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -11,7 +9,7 @@ import picocli.CommandLine.Mixin;
 import static picocli.CommandLine.Option;
 
 @Command(
-        subcommands = {CreateCommand.class, ListCommand.class, UpdateCommand.class, DeleteCommand.class},
+        subcommands = {SendCommand.class, ReceiveCommand.class},
         versionProvider = VersionProvider.class
 )
 public class CommandLineParser {
